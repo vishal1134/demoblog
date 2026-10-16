@@ -14,7 +14,7 @@ const categories = [
     eyebrow: "Credit Cards",
     slug: "credit-card-blog",
     blogs: [
-      ["Credit Card Basics: A Beginner’s Guide", "credit-card-basics-beginners-guide"],
+      ["Kotak Air Credit Card: Make Weekend Getaways More Rewarding", "credit-card-basics-beginners-guide"],
       ["How to Choose the Right Credit Card", "choose-the-right-credit-card"],
       ["Understanding Credit Card Fees and Charges", "understanding-credit-card-fees"],
       ["Tips to Improve Your Credit Score", "tips-to-improve-credit-score"],
@@ -78,7 +78,10 @@ categories.forEach((category, categoryIndex) => {
     let publishedDay = 1 + dayOffset;
     let publishedMonth = publishedDay <= 30 ? 9 : 10;
     publishedDay = publishedDay <= 30 ? publishedDay : publishedDay - 30;
-    const published = `2026-${String(publishedMonth).padStart(2, '0')}-${String(publishedDay).padStart(2, '0')}`;
+    const isReferenceArticle = category.slug === 'credit-card-blog' && blogIndex === 0;
+    const published = isReferenceArticle
+      ? '2020-03-26'
+      : `2026-${String(publishedMonth).padStart(2, '0')}-${String(publishedDay).padStart(2, '0')}`;
 
     let modifiedDay = Math.min(publishedDay + (blogIndex % 3), 31);
     let modifiedMonth = publishedMonth;
@@ -86,11 +89,16 @@ categories.forEach((category, categoryIndex) => {
       modifiedMonth = 10;
       modifiedDay = modifiedDay - 30;
     }
-    const lastModified = `2026-${String(modifiedMonth).padStart(2, '0')}-${String(modifiedDay).padStart(2, '0')}`;
+    const lastModified = isReferenceArticle
+      ? published
+      : `2026-${String(modifiedMonth).padStart(2, '0')}-${String(modifiedDay).padStart(2, '0')}`;
+    const image = category.slug === 'credit-card-blog' && blogIndex === 0
+      ? '/reference-kotak-hero.png'
+      : placeholderImg;
 
     entries.push({
       path: `/blogs/${category.slug}/${slug}`,
-      img: placeholderImg,
+      img: image,
       title: title,
       eyebrow: category.eyebrow,
       published: published,

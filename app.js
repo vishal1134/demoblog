@@ -12,6 +12,94 @@
  * - Related Products category list and Related Articles sidebar, both driven by tags
  */
 
+const BLOG_REFERENCE_TEMPLATE = {
+  eyebrow: 'Manage your budget',
+  tags: ['Basics of Banking', 'Credit Cards', 'Startups'],
+  takeaways: [
+    'Build a weekend-trip budget from the costs that apply to your own plans.',
+    'Check the current terms of any payment card or booking platform before relying on rewards.',
+    'Compare fees, eligibility rules, exclusions, and repayment requirements before choosing a card.',
+  ],
+  introduction: [
+    'A short getaway can include more than transport and accommodation. Meals, local travel, activities, and last-minute changes can all affect the final budget.',
+    'The sections below offer a practical checklist for planning a trip and reviewing card terms. Costs and reward eligibility vary by itinerary, provider, and product; confirm details directly with the relevant provider before booking.',
+  ],
+  sections: [
+    {
+      heading: 'What Do Weekend Trips Actually Cost?',
+      paragraphs: [
+        'Start with the parts of the trip you expect to pay for, then leave room for items that are easy to overlook. Your total depends on the destination, travel dates, group size, booking choices, and personal preferences.',
+      ],
+      list: [
+        'Transport to and from the destination, including local transfers.',
+        'Accommodation, taxes, deposits, and any cancellation conditions.',
+        'Meals, activities, entry tickets, and optional experiences.',
+        'A contingency for changes or unexpected expenses.',
+      ],
+      table: {
+        headers: ['Budget area', 'What to check'],
+        rows: [
+          ['Transport', 'Fare, baggage, transfer, and change conditions'],
+          ['Accommodation', 'Total price, taxes, deposit, and cancellation terms'],
+          ['Activities', 'Advance booking requirements and refund conditions'],
+          ['Contingency', 'A personal amount based on your plans and comfort level'],
+        ],
+      },
+    },
+    {
+      heading: 'How Do Travel Bookings Earn You Rewards?',
+      paragraphs: [
+        'Reward programmes use their own rules to define eligible purchases and how rewards are calculated or redeemed. A booking that appears travel-related may not qualify under every programme or channel.',
+        'Before counting on a reward, read the current issuer and booking-platform terms. Check eligible merchants, booking channels, exclusions, caps, expiry dates, redemption options, and any fees. Do not treat an advertised reward as a discount until you have confirmed its conditions.',
+      ],
+      list: [
+        'Confirm which transaction types and booking channels qualify.',
+        'Check whether rewards are capped, conditional, or time-limited.',
+        'Review redemption rules and any charges that may apply.',
+      ],
+    },
+    {
+      heading: 'What Should You Look for in a Card for Frequent Getaways?',
+      paragraphs: [
+        'Choose a card by comparing its current features with the way you actually travel. Consider the annual fee, payment due dates, applicable charges, acceptance where you plan to use it, and the terms attached to any travel-related benefits.',
+        'A reward or benefit may not be valuable if it does not fit your plans or if carrying a balance creates costs. Compare the full terms, make sure repayments fit your budget, and contact the issuer if any condition is unclear.',
+      ],
+      list: [
+        'Read the latest product terms and fee schedule.',
+        'Check eligibility and exclusions for benefits you expect to use.',
+        'Consider repayment obligations alongside any rewards.',
+      ],
+    },
+    {
+      heading: 'Conclusion',
+      paragraphs: [
+        'Plan the trip around a budget you can manage, verify booking and card terms before paying, and treat rewards as conditional rather than guaranteed. Product features and provider rules can change, so use the latest official information when making a decision.',
+      ],
+    },
+    {
+      heading: 'FAQs',
+      faqs: [
+        {
+          question: 'What should I include in a weekend-trip budget?',
+          answer: 'Consider transport, accommodation, meals, activities, local transfers, booking conditions, and a contingency that suits your plans.',
+        },
+        {
+          question: 'Will every travel booking earn card rewards?',
+          answer: 'Not necessarily. Eligibility depends on the card issuer’s current terms, the merchant, the booking channel, and any listed exclusions or limits.',
+        },
+        {
+          question: 'Should I choose a card based only on its rewards?',
+          answer: 'No. Compare the full terms, fees, repayment requirements, and benefits you are likely to use. Confirm product details with the issuer.',
+        },
+        {
+          question: 'Where can I confirm a card’s current features?',
+          answer: 'Check the issuer’s official product page and current terms, or contact the issuer directly before applying or booking.',
+        },
+      ],
+    },
+  ],
+};
+
 class BlogApp {
   constructor() {
     this.allBlogs = [];
@@ -19,6 +107,9 @@ class BlogApp {
     this.activeCategory = 'all';
     this.searchQuery = '';
     this.currentArticle = null;
+    this.defaultDocumentTitle = document.title;
+    this.metaDescription = document.querySelector('meta[name="description"]');
+    this.defaultMetaDescription = this.metaDescription?.content || '';
 
     // DOM Elements
     this.catalogView = document.getElementById('catalog-view');
@@ -26,6 +117,9 @@ class BlogApp {
     this.categoryPillsContainer = document.getElementById('category-pills');
     this.blogGrid = document.getElementById('blog-grid');
     this.latestStoriesGrid = document.getElementById('latest-stories-grid');
+    this.latestStoriesSection = document.getElementById('latest-stories-section');
+    this.landingLatestStoriesGrid = document.getElementById('landing-latest-stories-grid');
+    this.landingLatestStoriesSection = document.getElementById('landing-latest-stories-section');
     this.catalogHeading = document.getElementById('catalog-heading');
     this.catalogDescription = document.getElementById('catalog-description');
     this.visibleCount = document.getElementById('visible-count');
@@ -42,6 +136,11 @@ class BlogApp {
     this.relatedBlogsList = document.getElementById('related-blogs-list');
     this.sidebarCategoryBadge = document.getElementById('sidebar-category-badge');
     this.footerCategories = document.getElementById('footer-categories');
+    this.articleToc = document.getElementById('article-toc');
+    this.articleTocMobile = document.getElementById('article-toc-mobile');
+    this.articleLatestStories = document.getElementById('article-latest-stories');
+    this.latestTopicLinks = document.getElementById('latest-topic-links');
+    this.landingLatestTopicLinks = document.getElementById('landing-latest-topic-links');
   }
 
   async init() {
@@ -50,6 +149,7 @@ class BlogApp {
     this.renderCategoryPills();
     this.renderFooterLinks();
     this.renderLatestStories();
+    this.renderLatestTopics();
     this.handleRoute();
   }
 
@@ -93,13 +193,21 @@ class BlogApp {
       const pageSlug = parts[2] || `article-${index + 1}`;
       const categoryName = item.eyebrow || item.tags || this.formatSlugToTitle(categorySlug);
       
-      return {
+      const blog = {
         ...item,
         categorySlug,
         pageSlug,
         categoryName,
-        readingTime: `${3 + (index % 4)} min read`,
-        estimatedWords: 800 + (index * 75),
+      };
+
+      const wordCount = Number(item.wordCount) > 0
+        ? Number(item.wordCount)
+        : this.getGeneratedArticleWordCount(blog);
+
+      return {
+        ...blog,
+        wordCount,
+        readingTime: this.formatReadingTime(wordCount),
       };
     });
 
@@ -271,6 +379,8 @@ class BlogApp {
     this.catalogView.style.display = 'block';
     this.detailView.style.display = 'none';
     this.currentArticle = null;
+    document.title = this.defaultDocumentTitle;
+    if (this.metaDescription) this.metaDescription.content = this.defaultMetaDescription;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Update active category pill
@@ -299,6 +409,7 @@ class BlogApp {
     });
 
     this.filterAndRenderBlogList();
+    this.renderLatestStories();
   }
 
   /**
@@ -354,17 +465,69 @@ class BlogApp {
 
   /** Render the three most recently published entries from the generated index. */
   renderLatestStories() {
-    if (!this.latestStoriesGrid) return;
+    const isLanding = this.activeCategory === 'all';
+    if (this.landingLatestStoriesSection) this.landingLatestStoriesSection.style.display = isLanding ? 'block' : 'none';
+    if (this.latestStoriesSection) this.latestStoriesSection.style.display = isLanding ? 'none' : 'block';
 
-    const latestStories = [...this.allBlogs]
+    const landingStories = [...this.allBlogs]
       .sort((a, b) => this.getPublishedTimestamp(b.published) - this.getPublishedTimestamp(a.published))
       .slice(0, 3);
+    this.renderLatestStoryCards(this.landingLatestStoriesGrid, landingStories);
 
-    this.latestStoriesGrid.innerHTML = latestStories.length
-      ? latestStories.map((item) => this.renderBlogCard(item)).join('')
+    const categoryStories = this.activeCategory === 'all'
+      ? []
+      : [...(this.categoriesMap.get(this.activeCategory)?.blogs || [])]
+        .sort((a, b) => this.getPublishedTimestamp(b.published) - this.getPublishedTimestamp(a.published))
+        .slice(0, 3);
+    this.renderLatestStoryCards(this.latestStoriesGrid, categoryStories);
+  }
+
+  renderLatestStoryCards(container, stories) {
+    if (!container) return;
+    container.innerHTML = stories.length
+      ? stories.map((item, index) => this.renderLatestStoryCard(item, index)).join('')
       : '<p class="latest-stories-empty">No stories are available yet.</p>';
 
-    this.attachBlogNavigation(this.latestStoriesGrid);
+    container.querySelectorAll('.latest-story-card').forEach((card) => {
+      const navigate = () => {
+        const path = card.getAttribute('data-path');
+        if (path) this.navigateToBlog(path);
+      };
+      card.addEventListener('click', navigate);
+      card.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          navigate();
+        }
+      });
+    });
+  }
+
+  renderLatestTopics() {
+    const topicMarkup = [...this.categoriesMap.values()]
+      .map((category) => `<a class="latest-topic-chip" href="#/category/${category.slug}">${this.escapeHtml(category.name)}</a>`)
+      .join('');
+    [this.latestTopicLinks, this.landingLatestTopicLinks].filter(Boolean)
+      .forEach((container) => { container.innerHTML = topicMarkup; });
+    document.querySelectorAll('.latest-see-more').forEach((button) => {
+      button.addEventListener('click', () => {
+      this.blogGrid?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+
+  renderLatestStoryCard(item, index) {
+    const shape = index === 0 ? 'latest-story-featured' : 'latest-story-compact';
+    return `
+      <article class="latest-story-card ${shape}" data-path="${this.escapeHtml(item.path)}" tabindex="0" role="link" aria-label="Read ${this.escapeHtml(item.title)}">
+        <img class="latest-story-image" src="${this.escapeHtml(item.img || '')}" alt="${this.escapeHtml(item.title)}" loading="lazy">
+        <div class="latest-story-copy">
+          <span class="latest-story-category">${this.escapeHtml(item.eyebrow || item.categoryName)}</span>
+          <h3>${this.escapeHtml(item.title)}</h3>
+          <span class="latest-story-read-time">${this.escapeHtml(item.readingTime)}</span>
+        </div>
+      </article>
+    `;
   }
 
   /** Attach route navigation to article cards in any section. */
@@ -444,6 +607,10 @@ class BlogApp {
     this.currentArticle = blog;
     this.catalogView.style.display = 'none';
     this.detailView.style.display = 'block';
+    document.title = `${blog.title} | KBank Financial Editorial`;
+    if (this.metaDescription) {
+      this.metaDescription.content = `Read ${blog.title} and explore practical guidance for ${blog.categoryName.toLowerCase()}.`;
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Update Breadcrumbs
@@ -459,125 +626,144 @@ class BlogApp {
       this.sidebarCategoryBadge.textContent = blog.categoryName;
     }
 
-    // Render Dummy Article Body
     this.renderArticleContent(blog);
-
-    // Render tag-driven product categories and matching related articles.
+    this.renderTableOfContents();
     this.renderRelatedProducts(blog);
     this.renderRelatedArticles(blog);
+    this.renderArticleLatestStories(blog);
   }
 
   /**
    * Render dummy article body with rich editorial layout
    */
   renderArticleContent(blog) {
-    const badgeClass = this.getBadgeClass(blog.categorySlug);
     const pubDate = this.formatDate(blog.published);
     const modDate = this.formatDate(blog.lastModified);
+    const categoryBlogs = this.categoriesMap.get(blog.categorySlug)?.blogs || [];
+    const currentIndex = categoryBlogs.findIndex((item) => item.path === blog.path);
+    const nextBlog = currentIndex >= 0 && categoryBlogs.length > 1
+      ? categoryBlogs[(currentIndex + 1) % categoryBlogs.length]
+      : null;
+    const tags = BLOG_REFERENCE_TEMPLATE.tags
+      .map((tag) => `<span class="article-tag">${this.escapeHtml(tag)}</span>`)
+      .join('');
 
     this.articleContent.innerHTML = `
-      <header class="article-header">
-        <div class="article-eyebrow-row">
-          <span class="article-badge ${badgeClass}">${blog.eyebrow || blog.categoryName}</span>
-          <span class="article-read-time">📖 ${blog.readingTime}</span>
-          <span class="article-read-time">· ${blog.estimatedWords} words</span>
-        </div>
-        <h1 class="article-title">${blog.title}</h1>
-        <div class="article-meta-bar">
-          <span>Published on <strong>${pubDate}</strong></span>
-          <span class="meta-dot"></span>
-          <span>Last modified <strong>${modDate}</strong></span>
-          <span class="meta-dot"></span>
-          <span>Editorial Team at KBank</span>
-        </div>
-      </header>
-
       <div class="article-featured-media">
-        <img 
-          src="${blog.img}" 
-          alt="${blog.title}" 
-          onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22900%22 height=%22450%22 viewBox=%220 0 900 450%22><rect fill=%22%230284c7%22 width=%22900%22 height=%22450%22/><text fill=%22%23ffffff%22 font-family=%22sans-serif%22 font-size=%2232%22 font-weight=%22bold%22 text-anchor=%22middle%22 x=%22450%22 y=%22230%22>${encodeURIComponent(blog.title)}</text></svg>';"
-        >
+        <img src="${this.escapeHtml(blog.img || '')}" alt="${this.escapeHtml(blog.title)}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22900%22 height=%22450%22 viewBox=%220 0 900 450%22><rect fill=%22%230284c7%22 width=%22900%22 height=%22450%22/></svg>';">
       </div>
-
+      <header class="article-header">
+        <span class="article-eyebrow">${BLOG_REFERENCE_TEMPLATE.eyebrow}</span>
+        <h1 class="article-title">${this.escapeHtml(blog.title)}</h1>
+        <div class="article-meta-bar">
+          <span>${pubDate}</span>
+          <span class="meta-dot"></span>
+          <span>${this.escapeHtml(blog.categoryName)}</span>
+          <span class="meta-dot"></span>
+          <span>${blog.readingTime}</span>
+        </div>
+        <div class="article-tags" aria-label="Article tags">${tags}</div>
+      </header>
+      <nav class="article-toc-mobile" aria-label="Table of Contents">
+        <h2>Table of Contents</h2>
+        <div id="article-toc-mobile"></div>
+      </nav>
       <div class="article-body">
-        <p class="article-lead">
-          Understanding the fundamentals of <strong>${blog.title}</strong> is critical for achieving optimal financial health and unlocking greater personal wealth. In this comprehensive guide, we unpack the essential principles, key regulations, and practical decisions you need to know.
-        </p>
-
-        <!-- Key Takeaways Box -->
-        <div class="takeaways-box">
-          <div class="takeaways-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            Key Editorial Takeaways
-          </div>
-          <ul class="takeaways-list">
-            <li>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>
-              Always compare annual percentage rates, processing fees, and potential tenure penalties before committing.
-            </li>
-            <li>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>
-              Automate monthly contributions or payments to prevent late fees and preserve a stellar credit standing.
-            </li>
-            <li>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>
-              Leverage compound growth and balanced risk distribution across diversified portfolios.
-            </li>
-          </ul>
-        </div>
-
-        <h2>1. Why ${blog.title} Matters</h2>
-        <p>
-          Whether you are just getting started or refining an existing financial portfolio, having a disciplined approach to ${blog.categoryName.toLowerCase()} helps mitigate risks and maximizes long-term returns. Modern retail banking gives consumers unprecedented flexibility, but making informed decisions requires looking past standard promotional marketing.
-        </p>
-
-        <p>
-          Evaluating the terms, transparency of disclosures, and compounding structures ensures you select options tailored to your personal liquidity needs and time horizons.
-        </p>
-
-        <!-- Pro Tip Box -->
-        <div class="callout-box">
-          <div class="callout-icon">💡</div>
-          <div class="callout-content">
-            <h4>KBank Editorial Pro Tip</h4>
-            <p>
-              Always review the schedule of charges and compound calculation frequencies every quarter. Even minor 0.25% variations can make a substantial difference over a multi-year horizon.
-            </p>
-          </div>
-        </div>
-
-        <h2>2. Strategic Step-by-Step Implementation</h2>
-        <p>
-          Follow these structured phases to optimize your engagement with this asset class:
-        </p>
-        <ul class="article-bullets">
-          <li><strong>Audit Current Financial Metrics:</strong> Review net monthly cash flow, existing debt ratios, and emergency reserves.</li>
-          <li><strong>Define Clear Time Horizons:</strong> Align each vehicle with a concrete milestone (e.g., 6-month liquidity, 3-year goals, or retirement planning).</li>
-          <li><strong>Establish Automated Discipline:</strong> Set up automated standing orders right after paydays to systematically execute your plan.</li>
-          <li><strong>Annual Portfolio Rebalancing:</strong> Review asset allocations and fee structures annually to ensure alignment with prevailing interest rates.</li>
-        </ul>
-
-        <h2>3. Common Mistakes to Avoid</h2>
-        <p>
-          Many consumers fail to account for hidden administrative fees, prematurely break compounding deposits without verifying penalties, or overleverage credit limits. Staying proactive and reading all terms guarantees sustained wealth generation.
-        </p>
-
-        <!-- Author Bio Box -->
+        <section class="takeaways-box" aria-labelledby="takeaways-title">
+          <h2 class="takeaways-title" id="takeaways-title">Key Takeaways</h2>
+          <ul class="takeaways-list">${BLOG_REFERENCE_TEMPLATE.takeaways.map((item) => `<li>${item}</li>`).join('')}</ul>
+        </section>
+        <section class="article-introduction">
+          <h2>Introduction</h2>
+          ${BLOG_REFERENCE_TEMPLATE.introduction.map((paragraph) => `<p>${paragraph}</p>`).join('')}
+        </section>
+        ${BLOG_REFERENCE_TEMPLATE.sections.map((section) => this.renderArticleSection(section)).join('')}
         <div class="author-box">
-          <div class="author-avatar">${blog.categoryName.charAt(0)}</div>
+          <div class="author-avatar">${this.escapeHtml(blog.categoryName.charAt(0))}</div>
           <div class="author-meta">
-            <h4>KBank Financial Research Desk</h4>
-            <div class="author-role">Senior Wealth & Consumer Banking Analysts</div>
-            <p class="author-bio">
-              Authored by the quantitative advisory team at KBank. Dedicated to demystifying modern financial products with objective, data-backed editorial insights.
-            </p>
+            <h2>KBank Financial Research Desk</h2>
+            <div class="author-role">Editorial Team</div>
+            <p class="author-bio">This demo article is for general educational purposes. Confirm current product terms and travel booking conditions with the relevant providers.</p>
           </div>
         </div>
+        ${nextBlog ? `
+          <a class="read-next-link" href="#/blog${nextBlog.path}" aria-label="Read next article: ${this.escapeHtml(nextBlog.title)}">
+            <span class="read-next-label">Read next</span>
+            <span class="read-next-title">${this.escapeHtml(nextBlog.title)}</span>
+            <span class="read-next-arrow" aria-hidden="true">&rarr;</span>
+          </a>
+        ` : ''}
       </div>
     `;
+  }
+
+  renderArticleSection(section) {
+    const content = [];
+    (section.paragraphs || []).forEach((paragraph) => content.push(`<p>${paragraph}</p>`));
+    if (section.list?.length) {
+      content.push(`<ul class="article-bullets">${section.list.map((item) => `<li>${item}</li>`).join('')}</ul>`);
+    }
+    if (section.table) {
+      content.push(`
+        <div class="article-table-wrap" role="region" aria-label="${this.escapeHtml(section.heading)} budget checklist" tabindex="0">
+          <table class="article-table">
+            <thead><tr>${section.table.headers.map((cell) => `<th scope="col">${cell}</th>`).join('')}</tr></thead>
+            <tbody>${section.table.rows.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>
+          </table>
+        </div>
+      `);
+    }
+    if (section.faqs?.length) {
+      content.push(`<div class="faq-list">${section.faqs.map((faq) => `
+        <details class="faq-item">
+          <summary>${faq.question}</summary>
+          <p>${faq.answer}</p>
+        </details>
+      `).join('')}</div>`);
+    }
+    return `<section class="article-content-section"><h2>${this.escapeHtml(section.heading)}</h2>${content.join('')}</section>`;
+  }
+
+  renderTableOfContents() {
+    if (!this.articleContent) return;
+    this.articleTocMobile = this.articleContent.querySelector('#article-toc-mobile');
+    const headings = this.articleContent.querySelectorAll('.article-content-section > h2');
+    const links = [...headings].map((heading, index) => {
+      const slug = heading.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      heading.id = `article-${this.currentArticle.pageSlug}-${index + 1}-${slug}`;
+      heading.tabIndex = -1;
+      return `<li><a class="toc-link" href="#${heading.id}">${this.escapeHtml(heading.textContent)}</a></li>`;
+    });
+    const tocMarkup = links.length
+      ? `<ol class="toc-list">${links.join('')}</ol>`
+      : '<p class="sidebar-empty">No sections available.</p>';
+    [this.articleToc, this.articleTocMobile].filter(Boolean).forEach((container) => {
+      container.innerHTML = tocMarkup;
+      container.querySelectorAll('.toc-link').forEach((link) => {
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          const heading = document.getElementById(link.hash.slice(1));
+          if (heading) {
+            heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            heading.focus({ preventScroll: true });
+          }
+        });
+      });
+    });
+  }
+
+  renderArticleLatestStories(currentBlog) {
+    if (!this.articleLatestStories) return;
+    const stories = [...this.allBlogs]
+      .filter((blog) => blog.path !== currentBlog.path)
+      .sort((a, b) => this.getPublishedTimestamp(b.published) - this.getPublishedTimestamp(a.published))
+      .slice(0, 3);
+    this.articleLatestStories.innerHTML = stories.map((blog) => `
+      <a class="sidebar-story" href="#/blog${blog.path}">
+        <span class="sidebar-story-title">${this.escapeHtml(blog.title)}</span>
+        <span class="sidebar-story-meta">${this.formatDate(blog.published)} · ${blog.readingTime}</span>
+      </a>
+    `).join('');
   }
 
   /**
@@ -674,6 +860,37 @@ class BlogApp {
   }
 
   /* Utility Helpers */
+  getGeneratedArticleWordCount(blog) {
+    const content = [
+      blog.title,
+      BLOG_REFERENCE_TEMPLATE.introduction,
+      BLOG_REFERENCE_TEMPLATE.takeaways,
+      BLOG_REFERENCE_TEMPLATE.sections.map((section) => [
+        section.heading,
+        section.paragraphs || [],
+        section.list || [],
+        section.table ? [section.table.headers, section.table.rows] : [],
+        section.faqs ? section.faqs.flatMap((faq) => [faq.question, faq.answer]) : [],
+      ]),
+    ].flat(Infinity).join(' ');
+    return content.trim().split(/\s+/).filter(Boolean).length;
+  }
+
+  escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    })[character]);
+  }
+
+  formatReadingTime(wordCount) {
+    const minutes = Math.max(1, Math.ceil(wordCount / 200));
+    return `${minutes} min read`;
+  }
+
   formatDate(dateString) {
     if (!dateString) return 'Recent';
     try {

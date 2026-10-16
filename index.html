@@ -116,18 +116,20 @@
         </div>
       </section>
 
-      <!-- Latest Stories: dynamically sorted by published date -->
-      <section class="latest-stories-section" aria-labelledby="latest-stories-title">
+      <section class="latest-stories-section" id="landing-latest-stories-section" aria-labelledby="landing-latest-stories-title">
         <div class="container">
           <div class="section-heading-row">
             <div>
               <span class="section-kicker">Fresh from the editorial desk</span>
-              <h2 id="latest-stories-title">Latest Stories</h2>
+              <h2 id="landing-latest-stories-title">Latest Stories</h2>
             </div>
             <a href="#/category/all" class="section-link">View all insights <span aria-hidden="true">→</span></a>
           </div>
-          <div class="latest-stories-grid" id="latest-stories-grid" aria-live="polite">
-            <!-- Dynamically populated from query-index.json by published date -->
+          <div class="latest-stories-grid" id="landing-latest-stories-grid" aria-live="polite"></div>
+          <div class="latest-topics-strip">
+            <h3>Explore<br>more topics</h3>
+            <nav class="latest-topic-links" id="landing-latest-topic-links" aria-label="Explore more topics"></nav>
+            <button type="button" class="latest-see-more">See more stories</button>
           </div>
         </div>
       </section>
@@ -176,6 +178,23 @@
           <button class="btn btn-primary" id="btn-reset-filters">Reset Filters</button>
         </div>
       </div>
+
+      <section class="latest-stories-section" id="latest-stories-section" aria-labelledby="latest-stories-title" style="display: none;">
+        <div class="container">
+          <div class="section-heading-row">
+            <div>
+              <span class="section-kicker">Fresh from this category</span>
+              <h2 id="latest-stories-title">Latest Stories</h2>
+            </div>
+          </div>
+          <div class="latest-stories-grid" id="latest-stories-grid" aria-live="polite"></div>
+          <div class="latest-topics-strip">
+            <h3>Explore<br>more topics</h3>
+            <nav class="latest-topic-links" id="latest-topic-links" aria-label="Explore more topics"></nav>
+            <button type="button" class="latest-see-more" id="latest-see-more">See more stories</button>
+          </div>
+        </div>
+      </section>
     </section>
 
     <!-- ARTICLE DETAIL VIEW -->
@@ -207,16 +226,23 @@
           <!-- Populated dynamically based on query-index.json selected item -->
         </article>
 
-        <!-- Related Products and Articles Sidebar (Right Column) -->
-        <aside class="article-sidebar" aria-label="Related products and articles">
+        <!-- Article navigation and related content sidebar -->
+        <aside class="article-sidebar" aria-label="Article navigation and related content">
           <div class="sidebar-stack">
+            <section class="sidebar-card toc-card" aria-labelledby="toc-title">
+              <div class="sidebar-header">
+                <h2 class="sidebar-title" id="toc-title">Table of Contents</h2>
+              </div>
+              <nav id="article-toc" aria-label="Table of Contents"></nav>
+            </section>
+
             <div class="sidebar-card">
               <div class="sidebar-header">
                 <div class="sidebar-badge-wrap">
                   <span class="sidebar-badge">Product Categories</span>
                 </div>
                 <h3 class="sidebar-title">Related Products</h3>
-                <p class="sidebar-subtitle">Explore available financial product categories</p>
+                <p class="sidebar-subtitle">Browse product categories</p>
               </div>
 
               <div class="product-category-list" id="related-products-list">
@@ -224,19 +250,24 @@
               </div>
             </div>
 
-          <div class="sidebar-card">
-            <div class="sidebar-header">
-              <div class="sidebar-badge-wrap">
-                <span class="sidebar-badge" id="sidebar-category-badge">Category</span>
+            <section class="sidebar-card">
+              <div class="sidebar-header">
+                <div class="sidebar-badge-wrap">
+                  <span class="sidebar-badge" id="sidebar-category-badge">Category</span>
+                </div>
+                <h2 class="sidebar-title">Related Information</h2>
+                <p class="sidebar-subtitle">More guides in this category</p>
               </div>
-              <h3 class="sidebar-title">Related Articles</h3>
-              <p class="sidebar-subtitle">More guides in this product category</p>
-            </div>
+              <div class="related-list" id="related-blogs-list"></div>
+            </section>
 
-            <div class="related-list" id="related-blogs-list">
-              <!-- Dynamically populated with matching product category tags -->
-            </div>
-          </div>
+            <section class="sidebar-card" aria-labelledby="article-latest-title">
+              <div class="sidebar-header">
+                <h2 class="sidebar-title" id="article-latest-title">Latest Stories</h2>
+              </div>
+              <div class="sidebar-story-list" id="article-latest-stories"></div>
+            </section>
+
           </div>
         </aside>
       </div>
