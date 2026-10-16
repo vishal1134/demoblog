@@ -73,8 +73,21 @@ body {
   color: var(--color-text-primary);
   line-height: 1.6;
   min-height: 100vh;
-  display: flex;
+  display: none;
   flex-direction: column;
+}
+
+body.appear {
+  display: flex;
+}
+
+main > .section[data-section-status='initialized'],
+main > .section[data-section-status='loading'] {
+  display: none;
+}
+
+body:not(.footer-ready) .site-footer {
+  display: none;
 }
 
 img {

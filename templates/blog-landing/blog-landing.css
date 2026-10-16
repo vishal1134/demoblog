@@ -1,0 +1,7 @@
+@import url('/templates/blog-category/blog-category.css');
+
+body.blog-landing .related-products .product-category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}

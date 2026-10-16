@@ -1,0 +1,39 @@
+.related-information.is-loading {
+  min-height: 300px;
+}
+
+.related-information .info-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.related-information .info-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.related-information .info-link::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  flex: none;
+}
+
+.related-information .info-link:hover {
+  background: var(--color-surface-hover);
+}
+
+.related-information .info-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

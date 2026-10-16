@@ -1,0 +1,13 @@
+{
+  "name": "kbank-blog-scale-demo",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EDS-style blog logic (category indexes, tags, right column) tested at 3,000 blogs",
+  "scripts": {
+    "generate": "node generate-index.js",
+    "start": "node server.js",
+    "test": "node --test test/*.test.mjs",
+    "validate": "node validate-index.js"
+  }
+}

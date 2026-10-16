@@ -1,0 +1,136 @@
+version: 1
+indices:
+  blogs: &blogs
+    include:
+      - /blogs/**
+    exclude:
+      - /blogs
+      - /blogs/*
+    target: /blogs/query-index.json
+    properties:
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      description:
+        select: head > meta[name="description"]
+        value: attribute(el, "content")
+      image:
+        select: head > meta[property="og:image"]
+        value: match(attribute(el, "content"), "https?://[^/]+(/.*)")
+      publishedDate:
+        select: head > meta[name="published-time"]
+        value: attribute(el, "content")
+      category:
+        select: head > meta[name="cq-tags"]
+        value: match(attribute(el, "content"), "kotak:product/([^,]+)")
+      tags:
+        select: head > meta[name="cq-tags"]
+        value: attribute(el, "content")
+      robots:
+        select: head > meta[name="robots"]
+        value: attribute(el, "content")
+      lastModified:
+        select: none
+        value: parseTimestamp(headers["last-modified"], "ddd, DD MMM YYYY hh:mm:ss GMT")
+
+  blogs-home-loan: &lean
+    <<: *blogs
+    include:
+      - /blogs/home-loan/**
+    exclude:
+      - /blogs/home-loan
+    target: /blogs/home-loan/query-index.json
+    properties:
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      image:
+        select: head > meta[property="og:image"]
+        value: match(attribute(el, "content"), "https?://[^/]+(/.*)")
+      publishedDate:
+        select: head > meta[name="published-time"]
+        value: attribute(el, "content")
+      category:
+        select: head > meta[name="cq-tags"]
+        value: match(attribute(el, "content"), "kotak:product/([^,]+)")
+      tags:
+        select: head > meta[name="cq-tags"]
+        value: attribute(el, "content")
+      robots:
+        select: head > meta[name="robots"]
+        value: attribute(el, "content")
+
+
+  blogs-personal-loan:
+    <<: *lean
+    include:
+      - /blogs/personal-loan/**
+    exclude:
+      - /blogs/personal-loan
+    target: /blogs/personal-loan/query-index.json
+
+  blogs-credit-cards:
+    <<: *lean
+    include:
+      - /blogs/credit-cards/**
+    exclude:
+      - /blogs/credit-cards
+    target: /blogs/credit-cards/query-index.json
+
+  blogs-savings-account:
+    <<: *lean
+    include:
+      - /blogs/savings-account/**
+    exclude:
+      - /blogs/savings-account
+    target: /blogs/savings-account/query-index.json
+
+  blogs-current-account:
+    <<: *lean
+    include:
+      - /blogs/current-account/**
+    exclude:
+      - /blogs/current-account
+    target: /blogs/current-account/query-index.json
+
+  blogs-business-loan:
+    <<: *lean
+    include:
+      - /blogs/business-loan/**
+    exclude:
+      - /blogs/business-loan
+    target: /blogs/business-loan/query-index.json
+
+  blogs-deposits:
+    <<: *lean
+    include:
+      - /blogs/deposits/**
+    exclude:
+      - /blogs/deposits
+    target: /blogs/deposits/query-index.json
+
+  blogs-insurance:
+    <<: *lean
+    include:
+      - /blogs/insurance/**
+    exclude:
+      - /blogs/insurance
+    target: /blogs/insurance/query-index.json
+
+  related:
+    include:
+      - /blogs/*
+    target: /related-index.json
+    properties:
+      title:
+        select: head > meta[property="og:title"]
+        value: attribute(el, "content")
+      category:
+        select: head > meta[name="cq-tags"]
+        value: match(attribute(el, "content"), "kotak:product/([^,]+)")
+      pageType:
+        select: head > meta[name="page-type"]
+        value: attribute(el, "content")
+      priority:
+        select: head > meta[name="priority"]
+        value: attribute(el, "content")

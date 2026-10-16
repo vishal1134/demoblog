@@ -1,119 +1,161 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import {
+  CATEGORIES, TOPICS, CATEGORY_TAG, TOPIC_TAG, TITLE_PATTERNS, RELATED_INFORMATION,
+} from './data/taxonomy.js';
+import { runIndexer } from './data/indexer.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const root = path.dirname(fileURLToPath(import.meta.url));
+const argument = (name, fallback) => {
+  const hit = process.argv.find((value) => value.startsWith(`--${name}=`));
+  return hit ? hit.split('=')[1] : fallback;
+};
 
-const base = "https://main--kbankeds--xeragobiz.aem.live";
-const placeholderImg = `${base}/blogs/media_134b848c697e9152f269fa3b79696b855040912ba.png?width=1200&format=pjpg&optimize=medium`;
+const TOTAL = Number(argument('total', 3000));
+const SEED = Number(argument('seed', 42));
+const HOST = 'https://main--kbankeds--xeragobiz.aem.live';
+const START = Date.parse('2019-01-01T00:00:00Z');
+const END = Date.parse('2026-10-15T00:00:00Z');
 
-const categories = [
-  {
-    name: "Credit Cards",
-    eyebrow: "Credit Cards",
-    slug: "credit-card-blog",
-    blogs: [
-      ["Kotak Air Credit Card: Make Weekend Getaways More Rewarding", "credit-card-basics-beginners-guide"],
-      ["How to Choose the Right Credit Card", "choose-the-right-credit-card"],
-      ["Understanding Credit Card Fees and Charges", "understanding-credit-card-fees"],
-      ["Tips to Improve Your Credit Score", "tips-to-improve-credit-score"],
-      ["How to Use Credit Cards Responsibly", "use-credit-cards-responsibly"],
-    ],
+function seededRandom(seed) {
+  let state = seed;
+  return () => {
+    state = (state + 0x6D2B79F5) | 0;
+    let value = Math.imul(state ^ (state >>> 15), 1 | state);
+    value = (value + Math.imul(value ^ (value >>> 7), 61 | value)) ^ value;
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const random = seededRandom(SEED);
+const pick = (list) => list[Math.floor(random() * list.length)];
+const slugify = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const mediaName = (seed) => `media_1${crypto.createHash('sha1').update(seed).digest('hex')}`;
+
+const shareTotal = CATEGORIES.reduce((sum, category) => sum + category.share, 0);
+const counts = CATEGORIES.map((category) => Math.round((category.share / shareTotal) * TOTAL));
+counts[0] += TOTAL - counts.reduce((sum, count) => sum + count, 0);
+
+const pages = [];
+const edgeCases = { 'missing-category-tag': 0, 'two-category-tags': 0, noindex: 0, 'no-topics': 0 };
+
+pages.push({
+  path: '/blogs',
+  type: 'landing',
+  meta: {
+    'og:title': 'Kotak Stories: Money guides for every goal',
+    description: 'Practical guides on loans, cards, accounts, deposits and insurance from Kotak.',
+    template: 'blog-landing',
+    robots: 'index, follow',
   },
-  {
-    name: "Deposits",
-    eyebrow: "Deposits",
-    slug: "deposit-blog",
-    blogs: [
-      ["Fixed Deposits Explained: A Complete Guide", "fixed-deposits-complete-guide"],
-      ["How Fixed Deposit Interest Is Calculated", "fixed-deposit-interest-calculation"],
-      ["Cumulative vs Non-Cumulative Fixed Deposits", "cumulative-vs-non-cumulative-fixed-deposits"],
-      ["How to Build Savings with Recurring Deposits", "build-savings-recurring-deposits"],
-      ["Things to Check Before Opening a Fixed Deposit", "before-opening-a-fixed-deposit"],
-    ],
-  },
-  {
-    name: "Personal Loans",
-    eyebrow: "Personal Loans",
-    slug: "personal-loan-blog",
-    blogs: [
-      ["Personal Loans: Eligibility and Documents", "personal-loan-eligibility-documents"],
-      ["How to Compare Personal Loan Interest Rates", "compare-personal-loan-interest-rates"],
-      ["EMI Explained: Plan Your Monthly Repayments", "emi-monthly-repayments-guide"],
-      ["When Should You Consider a Personal Loan?", "when-to-consider-personal-loan"],
-      ["Common Personal Loan Application Mistakes", "personal-loan-application-mistakes"],
-    ],
-  },
-  {
-    name: "Investments",
-    eyebrow: "Investments",
-    slug: "investment-blog",
-    blogs: [
-      ["Investment Planning for Beginners", "investment-planning-for-beginners"],
-      ["Risk and Return: What Every Investor Should Know", "investment-risk-and-return"],
-      ["How to Set Financial Goals and Invest for Them", "financial-goals-and-investing"],
-      ["Understanding Compounding and Long-Term Growth", "compounding-long-term-growth"],
-      ["Diversification: Building a Balanced Portfolio", "diversification-balanced-portfolio"],
-    ],
-  },
-  {
-    name: "Savings Accounts",
-    eyebrow: "Savings Accounts",
-    slug: "savings-account-blog",
-    blogs: [
-      ["Savings Account Features You Should Know", "savings-account-features"],
-      ["How to Choose a Savings Account", "choose-a-savings-account"],
-      ["Simple Ways to Build an Emergency Fund", "build-an-emergency-fund"],
-      ["Understanding Savings Account Interest", "savings-account-interest-explained"],
-      ["Digital Banking Tips for Everyday Savings", "digital-banking-savings-tips"],
-    ],
-  },
-];
+  headers: { 'last-modified': new Date(END).toUTCString() },
+});
 
-const entries = [];
-categories.forEach((category, categoryIndex) => {
-  category.blogs.forEach(([title, slug], blogIndex) => {
-    const dayOffset = categoryIndex * 5 + blogIndex;
-    let publishedDay = 1 + dayOffset;
-    let publishedMonth = publishedDay <= 30 ? 9 : 10;
-    publishedDay = publishedDay <= 30 ? publishedDay : publishedDay - 30;
-    const isReferenceArticle = category.slug === 'credit-card-blog' && blogIndex === 0;
-    const published = isReferenceArticle
-      ? '2020-03-26'
-      : `2026-${String(publishedMonth).padStart(2, '0')}-${String(publishedDay).padStart(2, '0')}`;
-
-    let modifiedDay = Math.min(publishedDay + (blogIndex % 3), 31);
-    let modifiedMonth = publishedMonth;
-    if (modifiedMonth === 9 && modifiedDay > 30) {
-      modifiedMonth = 10;
-      modifiedDay = modifiedDay - 30;
-    }
-    const lastModified = isReferenceArticle
-      ? published
-      : `2026-${String(modifiedMonth).padStart(2, '0')}-${String(modifiedDay).padStart(2, '0')}`;
-    const image = category.slug === 'credit-card-blog' && blogIndex === 0
-      ? '/reference-kotak-hero.png'
-      : placeholderImg;
-
-    entries.push({
-      path: `/blogs/${category.slug}/${slug}`,
-      img: image,
-      title: title,
-      eyebrow: category.eyebrow,
-      published: published,
-      lastModified: lastModified,
-      // `tags` is the source of truth for product/category relationships.
-      // The URL path is used only to navigate to an article.
-      tags: [category.slug],
-    });
+CATEGORIES.forEach((category, categoryIndex) => {
+  pages.push({
+    path: `/blogs/${category.slug}`,
+    type: 'category',
+    category: category.slug,
+    meta: {
+      'og:title': `${category.name} guides`,
+      description: `Guides, explainers and checklists about ${category.name.toLowerCase()} from Kotak.`,
+      template: 'blog-category',
+      'cq-tags': `${CATEGORY_TAG}${category.slug}`,
+      'page-type': 'product',
+      priority: String(category.priority),
+      robots: 'index, follow',
+    },
+    headers: { 'last-modified': new Date(END).toUTCString() },
   });
+
+  for (let i = 0; i < counts[categoryIndex]; i += 1) {
+    const pattern = TITLE_PATTERNS[i % TITLE_PATTERNS.length];
+    const edition = Math.floor(i / TITLE_PATTERNS.length) + 1;
+    const title = `${pattern.replace('{name}', category.name)}${edition > 1 ? ` (Part ${edition})` : ''}`;
+    const slug = slugify(title);
+    const published = new Date(START + random() * (END - START));
+    const modified = new Date(Math.min(END, published.getTime() + random() * 90 * 86400000));
+    const topics = random() < 0.25
+      ? []
+      : [...new Set(Array.from({ length: 1 + Math.floor(random() * 3) }, () => pick(TOPICS)))];
+    if (!topics.length) edgeCases['no-topics'] += 1;
+
+    let productTags = [`${CATEGORY_TAG}${category.slug}`];
+    let edgeCase = '';
+    const roll = random();
+    if (roll < 0.03) {
+      productTags = [];
+      edgeCase = 'missing-category-tag';
+    } else if (roll < 0.04) {
+      const other = pick(CATEGORIES.filter((item) => item.slug !== category.slug));
+      productTags = [`${CATEGORY_TAG}${other.slug}`, `${CATEGORY_TAG}${category.slug}`];
+      edgeCase = 'two-category-tags';
+    }
+    if (edgeCase) edgeCases[edgeCase] += 1;
+
+    const noindex = random() < 0.02;
+    if (noindex) edgeCases.noindex += 1;
+
+    const media = mediaName(`${category.slug}/${slug}`);
+    const description = `${title}: practical guidance on ${category.name.toLowerCase()} covering costs, eligibility, documents and smart next steps for Kotak customers.`.slice(0, 160);
+
+    pages.push({
+      path: `/blogs/${category.slug}/${slug}`,
+      type: 'article',
+      folder: category.slug,
+      edgeCase,
+      readingMinutes: 3 + Math.floor(random() * 8),
+      meta: {
+        'og:title': title,
+        description,
+        'og:image': `${HOST}/blogs/${category.slug}/${media}.jpg?width=1200&format=pjpg&optimize=medium`,
+        'og:image:alt': title,
+        'published-time': published.toISOString(),
+        'modified-time': modified.toISOString(),
+        'cq-tags': [...productTags, ...topics.map((topic) => `${TOPIC_TAG}${topic}`)].join(','),
+        robots: noindex ? 'noindex, nofollow' : 'index, follow',
+        template: 'blog-article',
+      },
+      headers: { 'last-modified': modified.toUTCString() },
+    });
+  }
 });
 
-const outputPath = path.join(__dirname, 'query-index.json');
-fs.writeFileSync(outputPath, JSON.stringify(entries, null, 2) + '\n', 'utf-8');
+const articlesInPublishOrder = pages
+  .filter((page) => page.type === 'article')
+  .sort((a, b) => a.meta['published-time'].localeCompare(b.meta['published-time']));
+const indexOrder = [...pages.filter((page) => page.type !== 'article'), ...articlesInPublishOrder];
 
-console.log(`Generated ${entries.length} blog entries into ${outputPath}`);
-categories.forEach((cat) => {
-  console.log(`- ${cat.name}: ${cat.blogs.length}`);
+const indexes = runIndexer(indexOrder);
+
+const write = (relativePath, content) => {
+  const target = path.join(root, relativePath);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, content);
+  return Buffer.byteLength(content);
+};
+
+fs.rmSync(path.join(root, 'blogs'), { recursive: true, force: true });
+fs.rmSync(path.join(root, 'assets'), { recursive: true, force: true });
+
+write('content/pages.json', JSON.stringify(pages));
+
+const report = [];
+Object.entries(indexes).forEach(([target, sheet]) => {
+  const bytes = write(target.slice(1), JSON.stringify(sheet));
+  report.push({ target, rows: sheet.total, kb: Math.round(bytes / 1024) });
 });
+
+Object.entries(RELATED_INFORMATION).forEach(([slug, links]) => {
+  const items = links.map((item) => `      <li data-icon="${item.icon}"><a href="${item.href}">${item.label}</a></li>`).join('\n');
+  write(
+    `assets/related-information/${slug}.plain.html`,
+    `<div>\n  <div>\n    <h2>Related Information</h2>\n    <ul>\n${items}\n    </ul>\n  </div>\n</div>\n`,
+  );
+});
+
+console.log(`Generated ${articlesInPublishOrder.length} articles (+ ${pages.length - articlesInPublishOrder.length} landing/category pages)`);
+console.table(report);
+console.log('Edge cases:', edgeCases);

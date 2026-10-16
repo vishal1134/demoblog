@@ -1,0 +1,131 @@
+export const CATEGORIES = [
+  { slug: 'home-loan', name: 'Home Loan', share: 1100, priority: 1 },
+  { slug: 'personal-loan', name: 'Personal Loan', share: 650, priority: 2 },
+  { slug: 'credit-cards', name: 'Credit Cards', share: 450, priority: 3 },
+  { slug: 'savings-account', name: 'Savings Account', share: 270, priority: 4 },
+  { slug: 'current-account', name: 'Current Account', share: 230, priority: 5 },
+  { slug: 'business-loan', name: 'Business Loan', share: 160, priority: 6 },
+  { slug: 'deposits', name: 'Deposits', share: 90, priority: 7 },
+  { slug: 'insurance', name: 'Insurance', share: 50, priority: 8 },
+];
+
+export const TOPICS = [
+  'tax-saving', 'first-home', 'emi', 'interest-rates', 'credit-score',
+  'rewards', 'travel', 'security', 'digital-banking', 'savings-tips',
+  'documents', 'eligibility', 'prepayment', 'balance-transfer', 'retirement',
+];
+
+export const CATEGORY_TAG = 'kotak:product/';
+export const TOPIC_TAG = 'kotak:topic/';
+
+export const TITLE_PATTERNS = [
+  'How to Choose the Right {name} for Your Needs',
+  '{name} Eligibility: What You Need to Know',
+  'Documents Checklist Before Applying for {name}',
+  'Common {name} Mistakes and How to Avoid Them',
+  '{name} Interest Explained in Simple Terms',
+  'A Beginner Guide to {name} Charges and Fees',
+  'Smart Ways to Get More from Your {name}',
+  '{name} vs Alternatives: Which Fits You Better',
+  'What Changed for {name} Customers This Year',
+  'Step-by-Step: Managing Your {name} Online',
+];
+
+const link = (label, href, icon) => ({ label, href, icon });
+
+export const RELATED_INFORMATION = {
+  'home-loan': [
+    link('Home Loan EMI Calculator', '/calculators/home-loan-emi', 'calculator'),
+    link('Home Loan Eligibility', '/home-loan/eligibility', 'checklist'),
+    link('Home Loan Interest Rates', '/home-loan/interest-rates', 'percent'),
+    link('Home Loan Balance Transfer', '/home-loan/balance-transfer', 'transfer'),
+    link('Home Loan Documents', '/home-loan/documents', 'document'),
+    link('Home Loan Tax Benefits', '/home-loan/tax-benefits', 'tax'),
+    link('Pay Home Loan EMI', '/home-loan/pay-emi', 'payment'),
+    link('Home Loan Statement', '/home-loan/statement', 'document'),
+    link('Top-up Home Loan', '/home-loan/top-up', 'plus'),
+    link('Home Loan FAQs', '/home-loan/faqs', 'help'),
+  ],
+  'personal-loan': [
+    link('Personal Loan EMI Calculator', '/calculators/personal-loan-emi', 'calculator'),
+    link('Personal Loan Eligibility', '/personal-loan/eligibility', 'checklist'),
+    link('Personal Loan Interest Rate', '/personal-loan/interest-rates', 'percent'),
+    link('Personal Loan Fees and Charges', '/personal-loan/fees', 'document'),
+    link('Personal Loan Documents', '/personal-loan/documents', 'document'),
+    link('Personal Loan Balance Transfer', '/personal-loan/balance-transfer', 'transfer'),
+    link('Personal Loan Overdraft', '/personal-loan/overdraft', 'payment'),
+    link('Personal Loan FAQs', '/personal-loan/faqs', 'help'),
+  ],
+  'credit-cards': [
+    link('Credit Card EMI Calculator', '/calculators/credit-card-emi', 'calculator'),
+    link('Generate Credit Card PIN', '/credit-cards/generate-pin', 'lock'),
+    link('Credit Card Bill Payment', '/credit-cards/bill-payment', 'payment'),
+    link('Personal Loan on Credit Card', '/credit-cards/personal-loan', 'transfer'),
+    link('Credit Card Offers', '/credit-cards/offers', 'gift'),
+    link('Credit Card Rewards', '/credit-cards/rewards', 'gift'),
+    link('Credit Card Statement', '/credit-cards/statement', 'document'),
+    link('Block Credit Card', '/credit-cards/block', 'lock'),
+    link('Credit Card Limit Increase', '/credit-cards/limit', 'plus'),
+    link('Credit Card FAQs', '/credit-cards/faqs', 'help'),
+    link('Credit Card Charges', '/credit-cards/charges', 'percent'),
+    link('Add-on Credit Card', '/credit-cards/add-on', 'plus'),
+  ],
+  'savings-account': [
+    link('Savings Account Interest Calculator', '/calculators/savings-interest', 'calculator'),
+    link('Open Savings Account', '/savings-account/open', 'plus'),
+    link('Savings Account Charges', '/savings-account/charges', 'percent'),
+    link('Update KYC', '/savings-account/kyc', 'checklist'),
+    link('Download Statement', '/savings-account/statement', 'document'),
+    link('Savings Account FAQs', '/savings-account/faqs', 'help'),
+    link('Nominee Update', '/savings-account/nominee', 'document'),
+    link('Debit Card Services', '/savings-account/debit-card', 'payment'),
+  ],
+  'current-account': [
+    link('Open Current Account', '/current-account/open', 'plus'),
+    link('Current Account Charges', '/current-account/charges', 'percent'),
+    link('Cash Management Services', '/current-account/cash-management', 'transfer'),
+    link('Business Net Banking', '/current-account/net-banking', 'lock'),
+    link('Current Account FAQs', '/current-account/faqs', 'help'),
+    link('GST Payments', '/current-account/gst', 'tax'),
+    link('Bulk Payments', '/current-account/bulk-payments', 'payment'),
+    link('Current Account Statement', '/current-account/statement', 'document'),
+  ],
+  'business-loan': [
+    link('Business Loan EMI Calculator', '/calculators/business-loan-emi', 'calculator'),
+    link('Business Loan Eligibility', '/business-loan/eligibility', 'checklist'),
+    link('Business Loan Interest Rates', '/business-loan/interest-rates', 'percent'),
+    link('Business Loan Documents', '/business-loan/documents', 'document'),
+    link('Working Capital Loan', '/business-loan/working-capital', 'transfer'),
+    link('Business Loan FAQs', '/business-loan/faqs', 'help'),
+    link('Loan Against Property', '/business-loan/lap', 'plus'),
+    link('MSME Schemes', '/business-loan/msme', 'checklist'),
+  ],
+  deposits: [
+    link('Fixed Deposit Calculator', '/calculators/fixed-deposit', 'calculator'),
+    link('Recurring Deposit Calculator', '/calculators/recurring-deposit', 'calculator'),
+    link('Fixed Deposit Interest Rates', '/deposits/fd-rates', 'percent'),
+    link('Open Fixed Deposit', '/deposits/open-fd', 'plus'),
+    link('Tax Saver Fixed Deposit', '/deposits/tax-saver', 'tax'),
+    link('Deposit FAQs', '/deposits/faqs', 'help'),
+    link('Premature Withdrawal', '/deposits/premature-withdrawal', 'transfer'),
+    link('Deposit Certificate', '/deposits/certificate', 'document'),
+  ],
+  insurance: [
+    link('Life Insurance Calculator', '/calculators/life-insurance', 'calculator'),
+    link('Health Insurance Plans', '/insurance/health', 'checklist'),
+    link('Pay Insurance Premium', '/insurance/pay-premium', 'payment'),
+    link('Claim Assistance', '/insurance/claims', 'help'),
+    link('Insurance Tax Benefits', '/insurance/tax-benefits', 'tax'),
+    link('Insurance FAQs', '/insurance/faqs', 'help'),
+    link('Policy Documents', '/insurance/documents', 'document'),
+    link('Renew Policy', '/insurance/renew', 'transfer'),
+  ],
+  general: [
+    link('All Calculators', '/calculators', 'calculator'),
+    link('Interest Rates', '/rates', 'percent'),
+    link('Contact Us', '/contact-us', 'help'),
+    link('Locate a Branch', '/branch-locator', 'checklist'),
+    link('Safe Banking Tips', '/safe-banking', 'lock'),
+    link('Download Forms', '/forms', 'document'),
+  ],
+};

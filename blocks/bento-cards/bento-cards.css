@@ -1,0 +1,19 @@
+.bento-cards.is-loading {
+  min-height: 520px;
+}
+
+.bento-cards .latest-story-card {
+  color: inherit;
+}
+
+.bento-cards .latest-story-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 750 / 394;
+  object-fit: cover;
+}
+
+.bento-cards .latest-story-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

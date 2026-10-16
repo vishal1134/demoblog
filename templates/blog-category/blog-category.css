@@ -1,0 +1,12 @@
+body.blog-category main h1,
+body.blog-landing main h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  margin: 32px 0 8px;
+}
+
+body.blog-category main > .section > .default-content-wrapper p,
+body.blog-landing main > .section > .default-content-wrapper p {
+  color: var(--color-text-secondary);
+  margin-bottom: 24px;
+}

@@ -1,0 +1,32 @@
+.blog-toc .toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.blog-toc .toc-link {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+}
+
+.blog-toc .toc-link[aria-current='true'] {
+  border-left-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.blog-toc .toc-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
